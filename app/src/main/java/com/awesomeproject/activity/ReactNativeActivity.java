@@ -9,20 +9,15 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.awesomeproject.BuildConfig;
 import com.awesomeproject.ReactNativeFlipper;
+import com.awesomeproject.service.CustomJSBundleLoader;
 import com.awesomeproject.service.JsBundle.JsBundleManage;
 import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
-import com.facebook.react.PackageList;
+import com.awesomeproject.service.ReactInstanceManagerSingleton;
 import com.facebook.react.ReactInstanceManager;
-import com.facebook.react.ReactPackage;
 import com.facebook.react.ReactRootView;
-import com.facebook.react.common.LifecycleState;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
-import com.facebook.soloader.SoLoader;
 
-import java.io.File;
-import java.util.List;
 
 public class ReactNativeActivity extends Activity implements DefaultHardwareBackBtnHandler {
     private ReactRootView mReactRootView;
@@ -38,14 +33,17 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
 
         Intent intent = getIntent();
         Uri data = intent.getData();
-
         String bundleName = data.getQueryParameter("bundle");
         Toast toast = Toast.makeText(this, bundleName, Toast.LENGTH_LONG);
         toast.show();
 
+        // 拿到 manager
+        mReactInstanceManager = ReactInstanceManagerSingleton.getInstance(getApplication(), this, new CustomJSBundleLoader(ReactNativeActivity.this)).manager;
+
         JsBundleManage jsBundleManage = new JsBundleManage(ReactNativeActivity.this, bundleName);
-        // 验证本地bundle
+        // 本地是否有可用bundle
         JsBundleInfo jsBundleInfoVerify = jsBundleManage.verifyLocalMetaData(jsBundleManage.getMetaData());
+        // 没有就去加载
         // 如果验证失败，咋更新后重载，否则直接初始化并尝试更新bundle
         if (jsBundleInfoVerify == null) {
             jsBundleManage.updateLocal((jsBundleInfo) -> {
@@ -61,33 +59,21 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
     }
 
     private void startReactNative(JsBundleInfo jsBundleInfo) {
-
-        mReactRootView = new ReactRootView(this);
-
-
-        List<ReactPackage> packages = new PackageList(getApplication()).getPackages();
-
-        mReactInstanceManager = ReactInstanceManager
-                .builder()
-                .setApplication(getApplication())
-                .setCurrentActivity(this)
-                .setJSMainModulePath("index")
-                .setJSBundleFile(jsBundleInfo.bundleFilePath)
-                .addPackages(packages)
-                .setUseDeveloperSupport(BuildConfig.DEBUG)
-                .setInitialLifecycleState(LifecycleState.BEFORE_RESUME)
-                .build();
-
-
-        mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null);
-
-        setContentView(mReactRootView);
         try {
+            mReactRootView = new ReactRootView(this);
+
+            mReactInstanceManager.attachRootView(mReactRootView);
+
+            mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null);
+
+            setContentView(mReactRootView);
+
             ReactNativeFlipper.initializeFlipper(ReactNativeActivity.this, mReactInstanceManager);
         } catch (Exception e) {
 
         }
     }
+
 
     @Override
     protected void onResume() {
@@ -102,13 +88,13 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
     protected void onDestroy() {
         super.onDestroy();
 
+        if (mReactRootView != null) {
+            mReactRootView.unmountReactApplication();
+        }
         if (mReactInstanceManager != null) {
             mReactInstanceManager.onHostDestroy(this);
             mReactInstanceManager.detachRootView(mReactRootView);
             mReactInstanceManager.destroy();
-        }
-        if (mReactRootView != null) {
-            mReactRootView.unmountReactApplication();
         }
     }
 
@@ -124,7 +110,6 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
     @Override
     protected void onPause() {
         super.onPause();
-
         if (mReactInstanceManager != null) {
             mReactInstanceManager.onHostPause(this);
         }
