@@ -2,6 +2,7 @@ package com.awesomeproject.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -34,24 +35,35 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        JsBundleManage jsBundleManage = new JsBundleManage(ReactNativeActivity.this, "AwesomeProject");
-        jsBundleManage.updateLocal((jsBundleInfo) -> {
-            this.runOnUiThread(() -> {
-                if (jsBundleInfo.lazy) {
-                    this.recreate();
-                } else {
+
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+
+        String bundleName = data.getQueryParameter("bundle");
+        Toast toast = Toast.makeText(this, bundleName, Toast.LENGTH_LONG);
+        toast.show();
+
+        JsBundleManage jsBundleManage = new JsBundleManage(ReactNativeActivity.this, bundleName);
+        // 验证本地bundle
+        JsBundleInfo jsBundleInfoVerify = jsBundleManage.verifyLocalMetaData(jsBundleManage.getMetaData());
+        // 如果验证失败，咋更新后重载，否则直接初始化并尝试更新bundle
+        if (jsBundleInfoVerify == null) {
+            jsBundleManage.updateLocal((jsBundleInfo) -> {
+                this.runOnUiThread(() -> {
                     this.startReactNative(jsBundleInfo);
-                }
+                });
             });
-        });
+        } else {
+            this.startReactNative(jsBundleInfoVerify);
+            jsBundleManage.updateLocal();
+        }
+
     }
 
     private void startReactNative(JsBundleInfo jsBundleInfo) {
-        SoLoader.init(this, false);
 
         mReactRootView = new ReactRootView(this);
 
-        setContentView(mReactRootView);
 
         List<ReactPackage> packages = new PackageList(getApplication()).getPackages();
 
@@ -63,12 +75,13 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
                 .setJSBundleFile(jsBundleInfo.bundleFilePath)
                 .addPackages(packages)
                 .setUseDeveloperSupport(BuildConfig.DEBUG)
-                .setInitialLifecycleState(LifecycleState.RESUMED)
+                .setInitialLifecycleState(LifecycleState.BEFORE_RESUME)
                 .build();
 
-        mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null);
-        onResume();
 
+        mReactRootView.startReactApplication(mReactInstanceManager, "AwesomeProject", null);
+
+        setContentView(mReactRootView);
         try {
             ReactNativeFlipper.initializeFlipper(ReactNativeActivity.this, mReactInstanceManager);
         } catch (Exception e) {
@@ -91,6 +104,8 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
 
         if (mReactInstanceManager != null) {
             mReactInstanceManager.onHostDestroy(this);
+            mReactInstanceManager.detachRootView(mReactRootView);
+            mReactInstanceManager.destroy();
         }
         if (mReactRootView != null) {
             mReactRootView.unmountReactApplication();

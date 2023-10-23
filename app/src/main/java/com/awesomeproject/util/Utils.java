@@ -8,7 +8,7 @@ public class Utils {
     public static String getStringByInputStream(InputStream inputStream) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
-            byte[] b = new byte[10240];
+            byte[] b = new byte[1024];
             int n;
             while ((n = inputStream.read(b)) != -1) {
                 outputStream.write(b, 0, n);

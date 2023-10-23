@@ -11,6 +11,8 @@ import com.awesomeproject.service.JsBundle.dto.JsBundleVersionMetaData;
 import com.awesomeproject.service.JsBundle.dto.PullLastBundleReq;
 import com.google.gson.Gson;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -35,45 +37,44 @@ public class JsBundleManage {
     private final String bundleName;
     private String jsBundleDirPath;
     private String jsBundleMetaDataFilePath;
-
-    private boolean callbackTrigger;
+    private String bundleServerBaseUrl = "http://103.144.3.110:8080/api/bundle";
 
     public JsBundleManage(Context context, String bundleName) {
         this.context = context;
+        // bundle 名称
         this.bundleName = bundleName;
+        // jsBundle 文件存放路径
         this.jsBundleDirPath = context.getFilesDir() + "/jsBundle";
+        // 本地meta.json 存放路径
         this.jsBundleMetaDataFilePath = this.jsBundleDirPath + "/meta.json";
     }
 
     /**
      * 更新本地bundle
      */
+    /**
+     * 更新本地bundle
+     */
+    public void updateLocal() {
+        this.updateLocal(null);
+    }
+
     public void updateLocal(CallBackFunction callback) {
-        this.callbackTrigger = false;
-
-        JsBundleMetaData jsBundleMetaData = this.getMetaData();
-        JsBundleInfo jsBundleInfo = this.verifyLocalMetaData(jsBundleMetaData);
-
-        if (jsBundleInfo != null) {
-            jsBundleInfo.lazy = false;
-            this.callbackTrigger = true;
-            callback.apply(jsBundleInfo);
-        }
         new Thread(() -> {
             try {
+                JsBundleMetaData jsBundleMetaData = this.getMetaData();
                 CheckLastVersionRes.Data checkLastVersionRes = this.getLastVersionInfo();
 
                 if (checkLastVersionRes.name.equals(jsBundleMetaData.name)) {
                     if (!checkLastVersionRes.version.equals(jsBundleMetaData.lastVersion)) {
-                        this.downloadBundle(checkLastVersionRes.version);
-                        this.syncMetaData(checkLastVersionRes);
-                        if (!callbackTrigger) {
+                        this.syncBundle(checkLastVersionRes);
+                        if (callback != null) {
                             JsBundleInfo newJsBundleInfo = this.verifyLocalMetaData(this.getMetaData());
                             if (newJsBundleInfo != null) {
-                                newJsBundleInfo.lazy = true;
                                 callback.apply(newJsBundleInfo);
                             }
                         }
+
                     }
                 }
             } catch (Exception e) {
@@ -81,16 +82,14 @@ public class JsBundleManage {
                 Log.e(TAG, message + "Exception occurred: " + e.getMessage());
                 e.printStackTrace();
             }
-
         }).start();
-
     }
 
-    private void downloadBundle(String version) {
+    private void syncBundle(CheckLastVersionRes.Data checkLastVersionRes) {
         try {
-            String outputDir = this.jsBundleDirPath + "/" + version; // 解压后的输出
+            String outputDir = this.jsBundleDirPath + "/" + checkLastVersionRes.version; // 解压后的输出
 
-            URL url = new URL("http://103.144.3.110:8080/api/bundle/pullLastBundle");
+            URL url = new URL(this.bundleServerBaseUrl + "/pullLastBundle");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
@@ -108,6 +107,9 @@ public class JsBundleManage {
 
             int responseCode = conn.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
+                File outputDirFile = new File(outputDir);
+                if (outputDirFile.exists()) FileUtils.deleteQuietly(outputDirFile);
+
                 BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
 
                 // ZIP解压
@@ -147,6 +149,19 @@ public class JsBundleManage {
                 // 断开连接
                 conn.disconnect();
 
+                JsBundleMetaData jsBundleMetaData = new JsBundleMetaData();
+                jsBundleMetaData.name = checkLastVersionRes.name;
+                jsBundleMetaData.lastVersion = checkLastVersionRes.version;
+
+                File metaDataFile = new File(this.jsBundleMetaDataFilePath);
+
+                FileOutputStream fos = new FileOutputStream(metaDataFile);
+
+                String metaDataStr = gson.toJson(jsBundleMetaData);
+
+                fos.write(metaDataStr.getBytes());
+                fos.close();
+
             } else {
                 throw new ConnectException("接口请求失败");
             }
@@ -159,7 +174,7 @@ public class JsBundleManage {
 
     }
 
-    private JsBundleInfo verifyLocalMetaData(JsBundleMetaData jsBundleMetaData) {
+    public JsBundleInfo verifyLocalMetaData(JsBundleMetaData jsBundleMetaData) {
         if (!this.bundleName.equals(jsBundleMetaData.name)) return null;
         File versionMeta = new File(this.jsBundleDirPath + "/" + jsBundleMetaData.lastVersion + "/meta.json");
         File bundle = new File(this.jsBundleDirPath + "/" + jsBundleMetaData.lastVersion + "/bundle/index.bundle");
@@ -192,31 +207,8 @@ public class JsBundleManage {
 
     }
 
-    private void syncMetaData(CheckLastVersionRes.Data checkLastVersionRes) {
-        try {
 
-            JsBundleMetaData jsBundleMetaData = new JsBundleMetaData();
-            jsBundleMetaData.name = checkLastVersionRes.name;
-            jsBundleMetaData.lastVersion = checkLastVersionRes.version;
-
-            File metaDataFile = new File(this.jsBundleMetaDataFilePath);
-
-            FileOutputStream fos = new FileOutputStream(metaDataFile);
-
-            String metaDataStr = gson.toJson(jsBundleMetaData);
-
-            fos.write(metaDataStr.getBytes());
-            fos.close();
-        } catch (Exception e) {
-            String message = "同步本地meta.json失败";
-            Log.e(TAG, message + "Exception occurred: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException(message);
-        }
-
-    }
-
-    private JsBundleMetaData getMetaData() throws RuntimeException {
+    public JsBundleMetaData getMetaData() throws RuntimeException {
         try {
             File metaDataFile = new File(this.jsBundleMetaDataFilePath);
 
@@ -241,6 +233,7 @@ public class JsBundleManage {
 
                 JsBundleMetaData jsBundleMetaData = new JsBundleMetaData();
                 jsBundleMetaData.name = this.bundleName;
+                jsBundleMetaData.lastVersion = "";
                 String metaDataStr = gson.toJson(jsBundleMetaData);
 
                 fos.write(metaDataStr.getBytes());
@@ -259,7 +252,7 @@ public class JsBundleManage {
 
     public CheckLastVersionRes.Data getLastVersionInfo() throws RuntimeException {
         try {
-            URL url = new URL("http://103.144.3.110:8080/api/bundle/checkLastVersion");
+            URL url = new URL(this.bundleServerBaseUrl + "/checkLastVersion");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");

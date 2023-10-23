@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">AwesomeProject</string>
-    <string name="test_activity">TestActivity</string>
+    <string name="main_activity">AwesomeProject</string>
 </resources>
