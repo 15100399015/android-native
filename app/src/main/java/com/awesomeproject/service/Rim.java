@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 
 import com.awesomeproject.BuildConfig;
+import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
@@ -13,14 +14,14 @@ import com.facebook.soloader.SoLoader;
 
 import java.util.List;
 
-public class ReactInstanceManagerSingleton {
-    private static ReactInstanceManagerSingleton singletonHolder;
+public class Rim {
+    private static Rim singletonHolder;
 
-    private ReactInstanceManagerSingleton(Application application, Activity activity, JSBundleLoader jsBundleLoader) {
+    private Rim(Application application, Activity activity, CustomJSBundleLoader jsBundleLoader) {
         SoLoader.init(activity, false);
 
         List<ReactPackage> packages = new PackageList(application).getPackages();
-
+        this.customJSBundleLoader = jsBundleLoader;
         this.manager = ReactInstanceManager
                 .builder()
                 .setApplication(application)
@@ -32,13 +33,19 @@ public class ReactInstanceManagerSingleton {
                 .setInitialLifecycleState(LifecycleState.RESUMED)
                 .build();
 
+
     }
 
     public final ReactInstanceManager manager;
+    private final CustomJSBundleLoader customJSBundleLoader;
 
-    public static ReactInstanceManagerSingleton getInstance(Application application, Activity activity, JSBundleLoader jsBundleLoader) {
+    public void attachActivity(Activity activity) {
+        customJSBundleLoader.currentActivity = activity;
+    }
+
+    public static Rim getInstance(Application application, Activity activity, CustomJSBundleLoader jsBundleLoader) {
         if (singletonHolder == null) {
-            singletonHolder = new ReactInstanceManagerSingleton(application, activity, jsBundleLoader);
+            singletonHolder = new Rim(application, activity, jsBundleLoader);
         }
 
         return singletonHolder;

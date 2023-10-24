@@ -28,7 +28,7 @@ import java.net.URL;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class JsBundleManage {
+public class JsBundleManager {
 
     String TAG = "JsBundleManage";
 
@@ -39,19 +39,16 @@ public class JsBundleManage {
     private String jsBundleMetaDataFilePath;
     private String bundleServerBaseUrl = "http://103.144.3.110:8080/api/bundle";
 
-    public JsBundleManage(Context context, String bundleName) {
+    public JsBundleManager(Context context, String bundleName) {
         this.context = context;
         // bundle 名称
         this.bundleName = bundleName;
         // jsBundle 文件存放路径
-        this.jsBundleDirPath = context.getFilesDir() + "/jsBundle";
+        this.jsBundleDirPath = context.getFilesDir() + "/jsBundle/" + bundleName;
         // 本地meta.json 存放路径
         this.jsBundleMetaDataFilePath = this.jsBundleDirPath + "/meta.json";
     }
 
-    /**
-     * 更新本地bundle
-     */
     /**
      * 更新本地bundle
      */
