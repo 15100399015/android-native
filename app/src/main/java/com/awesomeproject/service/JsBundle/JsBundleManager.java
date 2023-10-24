@@ -1,5 +1,6 @@
 package com.awesomeproject.service.JsBundle;
 
+import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
@@ -32,19 +33,19 @@ public class JsBundleManager {
 
     String TAG = "JsBundleManage";
 
-    private final Context context;
+    private final Application application;
     private final Gson gson = new Gson();
     private final String bundleName;
-    private String jsBundleDirPath;
-    private String jsBundleMetaDataFilePath;
-    private String bundleServerBaseUrl = "http://103.144.3.110:8080/api/bundle";
+    private final String jsBundleDirPath;
+    private final String jsBundleMetaDataFilePath;
+    private final String bundleServerBaseUrl = "http://103.144.3.110:8080/api/bundle";
 
-    public JsBundleManager(Context context, String bundleName) {
-        this.context = context;
+    public JsBundleManager(Application application, String bundleName) {
+        this.application = application;
         // bundle 名称
         this.bundleName = bundleName;
         // jsBundle 文件存放路径
-        this.jsBundleDirPath = context.getFilesDir() + "/jsBundle/" + bundleName;
+        this.jsBundleDirPath = application.getFilesDir() + "/jsBundle/" + bundleName;
         // 本地meta.json 存放路径
         this.jsBundleMetaDataFilePath = this.jsBundleDirPath + "/meta.json";
     }

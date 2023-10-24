@@ -1,15 +1,16 @@
 package com.awesomeproject.activity;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.awesomeproject.ReactNativeFlipper;
+import com.awesomeproject.view.LoadingView;
 import com.awesomeproject.service.CustomJSBundleLoader;
 import com.awesomeproject.service.JsBundle.JsBundleManager;
 import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
@@ -43,18 +44,19 @@ public class ReactNativeActivity extends Activity implements DefaultHardwareBack
         Intent intent = getIntent();
         Uri data = intent.getData();
         String bundleName = data.getQueryParameter("bundle");
-        Toast toast = Toast.makeText(this, bundleName, Toast.LENGTH_LONG);
-        toast.show();
 
-        mRim = Rim.getInstance(getApplication(), this, new CustomJSBundleLoader(ReactNativeActivity.this));
+        Application application = getApplication();
+
+        mRim = Rim.getInstance(application, this, new CustomJSBundleLoader(application));
         mReactInstanceManager = mRim.manager;
 
-        JsBundleManager jsBundleManager = new JsBundleManager(this, bundleName);
+        JsBundleManager jsBundleManager = new JsBundleManager(application, bundleName);
         // 本地是否有可用bundle
         JsBundleInfo jsBundleInfoVerify = jsBundleManager.verifyLocalMetaData(jsBundleManager.getMetaData());
         // 没有就去加载
         // 如果验证失败，咋更新后重载，否则直接初始化并尝试更新bundle
         if (jsBundleInfoVerify == null) {
+            setContentView(new LoadingView(this));
             jsBundleManager.updateLocal((jsBundleInfo) -> {
                 this.runOnUiThread(() -> {
                     this.startReactNative(jsBundleInfo);

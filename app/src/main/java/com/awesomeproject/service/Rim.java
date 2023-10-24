@@ -18,7 +18,7 @@ public class Rim {
     private static Rim singletonHolder;
 
     private Rim(Application application, Activity activity, CustomJSBundleLoader jsBundleLoader) {
-        SoLoader.init(activity, false);
+        SoLoader.init(application, false);
 
         List<ReactPackage> packages = new PackageList(application).getPackages();
         this.customJSBundleLoader = jsBundleLoader;

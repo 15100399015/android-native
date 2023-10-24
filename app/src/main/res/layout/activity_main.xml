@@ -1,24 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.flexbox.FlexboxLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    app:flexDirection="column"
+    app:flexWrap="wrap"
+    app:justifyContent="flex_end">
 
 
-    <EditText
-        android:id="@+id/editTextText"
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/navigation_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:inputType="text"
-        android:text="zymobi://liangx:8080/rn?bundle=AwesomeProject" />
+        android:layout_height="50dp"
+        app:flexDirection="row"
+        app:justifyContent="space_around">
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="跳转" />
+        <Button
+            android:id="@+id/home_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="首页"
+            app:layout_flexGrow="1" />
+
+        <Button
+            android:id="@+id/lottery_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="抽奖"
+            app:layout_flexGrow="1" />
+
+        <Button
+            android:id="@+id/private_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="个人页"
+            app:layout_flexGrow="1" />
+    </com.google.android.flexbox.FlexboxLayout>
 
 
-</android.widget.LinearLayout>
+</com.google.android.flexbox.FlexboxLayout>
