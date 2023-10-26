@@ -1,15 +1,14 @@
-package com.awesomeproject.service.JsBundle;
+package com.awesomeproject.service.jsBundle;
 
 import android.app.Application;
-import android.content.Context;
 import android.util.Log;
-
-import com.awesomeproject.service.JsBundle.dto.CheckLastVersionReq;
-import com.awesomeproject.service.JsBundle.dto.CheckLastVersionRes;
-import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
-import com.awesomeproject.service.JsBundle.dto.JsBundleMetaData;
-import com.awesomeproject.service.JsBundle.dto.JsBundleVersionMetaData;
-import com.awesomeproject.service.JsBundle.dto.PullLastBundleReq;
+import com.awesomeproject.service.jsBundle.CallBackFunction;
+import com.awesomeproject.service.jsBundle.dto.CheckLastVersionReq;
+import com.awesomeproject.service.jsBundle.dto.CheckLastVersionRes;
+import com.awesomeproject.service.jsBundle.dto.JsBundleInfo;
+import com.awesomeproject.service.jsBundle.dto.JsBundleMetaData;
+import com.awesomeproject.service.jsBundle.dto.JsBundleVersionMetaData;
+import com.awesomeproject.service.jsBundle.dto.PullLastBundleReq;
 import com.google.gson.Gson;
 
 import org.apache.commons.io.FileUtils;

@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 
 import com.awesomeproject.BuildConfig;
-import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
+import com.awesomeproject.service.jsBundle.dto.JsBundleInfo;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;

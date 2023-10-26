@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.awesomeproject.service.JsBundle.JsBundleManager;
-import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
+import com.awesomeproject.service.jsBundle.JsBundleManager;
+import com.awesomeproject.service.jsBundle.dto.JsBundleInfo;
 import com.facebook.react.bridge.JSBundleLoader;
 import com.facebook.react.bridge.JSBundleLoaderDelegate;
 

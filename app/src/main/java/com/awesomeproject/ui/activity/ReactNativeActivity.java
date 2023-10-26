@@ -1,4 +1,4 @@
-package com.awesomeproject.activity;
+package com.awesomeproject.ui.activity;
 
 import android.app.Activity;
 import android.app.Application;
@@ -12,8 +12,8 @@ import androidx.annotation.Nullable;
 import com.awesomeproject.ReactNativeFlipper;
 import com.awesomeproject.view.LoadingView;
 import com.awesomeproject.service.CustomJSBundleLoader;
-import com.awesomeproject.service.JsBundle.JsBundleManager;
-import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
+import com.awesomeproject.service.jsBundle.JsBundleManager;
+import com.awesomeproject.service.jsBundle.dto.JsBundleInfo;
 import com.awesomeproject.service.Rim;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;

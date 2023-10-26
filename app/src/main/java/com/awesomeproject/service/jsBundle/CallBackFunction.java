@@ -1,7 +1,7 @@
-package com.awesomeproject.service.JsBundle;
+package com.awesomeproject.service.jsBundle;
 
 
-import com.awesomeproject.service.JsBundle.dto.JsBundleInfo;
+import com.awesomeproject.service.jsBundle.dto.JsBundleInfo;
 
 @FunctionalInterface
 public interface CallBackFunction {

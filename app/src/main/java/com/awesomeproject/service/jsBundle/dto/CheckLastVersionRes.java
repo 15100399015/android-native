@@ -1,4 +1,4 @@
-package com.awesomeproject.service.JsBundle.dto;
+package com.awesomeproject.service.jsBundle.dto;
 
 public class CheckLastVersionRes {
     public Integer code;

@@ -1,4 +1,4 @@
-package com.awesomeproject.activity;
+package com.awesomeproject.ui.activity;
 
 import android.content.Intent;
 import android.net.Uri;
