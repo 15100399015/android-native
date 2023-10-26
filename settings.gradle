@@ -1,4 +1,4 @@
 rootProject.name = 'AwesomeProject'
 include ':app'
 
-includeBuild('./gradle-plugins/react-native-gradle-plugin')
+includeBuild('./react-native-gradle-plugin')
